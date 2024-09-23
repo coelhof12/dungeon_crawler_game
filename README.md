@@ -1,8 +1,8 @@
 # Dungeon Crawler Game with Procedural Generation
 
-![Project Cover](./assets/images/Repo_Cover.jpg)
+![Project Cover](https://raw.githubusercontent.com/coelhof12/dungeon_crawler_game/main/assets/images/Repo_Cover.jpg)
 
-## Aditional Information
+## Additional Information
 
 This project is a 2D top-down dungeon crawler game where players explore procedurally generated dungeons, fight enemies, and collect items. The dungeon layouts are randomly generated, ensuring that each playthrough offers a unique experience. As the player progresses, they will face more challenging enemies and discover valuable treasures. The game is built using Java and the SimpleGraphics library, showcasing both front-end and back-end development skills.
 
