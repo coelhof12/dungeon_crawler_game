@@ -1,5 +1,6 @@
 # Dungeon Crawler Game with Procedural Generation
 
+![Project Cover](IMAGE PATH HERE)
 
 ## Aditional Information
 
