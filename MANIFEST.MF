@@ -1,4 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: Main
-Class-Path: lib/SimpleGraphics.jar
-
+Main-Class: dungeoncrawler.Main
