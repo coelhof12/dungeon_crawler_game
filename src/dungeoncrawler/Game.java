@@ -1,5 +1,7 @@
 package dungeoncrawler;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -9,6 +11,9 @@ public class Game {
     private final int WIDTH = 20;  // Width of the dungeon
     private final int HEIGHT = 10; // Height of the dungeon
     private Random rand = new Random();
+
+    // List to store enemies
+    private List<Enemy> enemies = new ArrayList<>();
 
     public Game() {
         player = new Player(1, 1);  // Starting position
@@ -20,9 +25,13 @@ public class Game {
         System.out.println("Welcome to the Procedurally Generated Dungeon Crawler!");
         generateDungeon();  // Generate the dungeon layout
         placePlayer();
+        placeExit();
+        spawnEnemies(3);  // Spawns 3 enemies
         while (true) {
             printDungeon();
             handleInput();
+            moveEnemies();  // Move enemies after each player turn
+            handleCombat(); // Check for player and enemy combat interactions
         }
     }
 
@@ -37,8 +46,7 @@ public class Game {
 
     // Generate a dungeon using Depth-First Search (DFS)
     private void generateDungeon() {
-        // Start the dungeon carving from the top-left corner (1,1)
-        carvePassagesFrom(1, 1);
+        carvePassagesFrom(1, 1);  // Start dungeon carving from the top-left corner
     }
 
     // Carve passages recursively using DFS
@@ -61,15 +69,13 @@ public class Game {
                 case 4: dx = 1; break;  // Right
             }
 
-            // Check the position two steps away (because one step should remain a wall)
+            // Check the position two steps away
             int newX = x + 2 * dx;
             int newY = y + 2 * dy;
 
             // Ensure the new position is within bounds and uncarved
             if (newX > 0 && newX < WIDTH - 1 && newY > 0 && newY < HEIGHT - 1 && dungeon[newY][newX] == '#') {
-                // Carve a passage through the wall between the current cell and the new cell
-                dungeon[y + dy][x + dx] = '.';
-                // Recur to carve the new cell
+                dungeon[y + dy][x + dx] = '.';  // Carve a passage between the cells
                 carvePassagesFrom(newX, newY);
             }
         }
@@ -78,6 +84,48 @@ public class Game {
     // Place the player at the starting position
     private void placePlayer() {
         player.setPosition(1, 1);
+    }
+
+    // Place the exit in a random location far from the player
+    private void placeExit() {
+        int exitX, exitY;
+        do {
+            exitX = rand.nextInt(WIDTH - 2) + 1;
+            exitY = rand.nextInt(HEIGHT - 2) + 1;
+        } while (Math.abs(exitX - player.getX()) + Math.abs(exitY - player.getY()) < 10);  // Ensure it's far from player
+
+        dungeon[exitY][exitX] = 'X';  // 'X' represents the exit
+    }
+
+    // Spawn enemies in random locations
+    private void spawnEnemies(int count) {
+        for (int i = 0; i < count; i++) {
+            int ex, ey;
+            do {
+                ex = rand.nextInt(WIDTH - 2) + 1;
+                ey = rand.nextInt(HEIGHT - 2) + 1;
+            } while (dungeon[ey][ex] != '.');  // Ensure enemy spawns in an open space
+            enemies.add(new Enemy(ex, ey));
+        }
+    }
+
+    // Move enemies randomly each turn
+    private void moveEnemies() {
+        for (Enemy enemy : enemies) {
+            enemy.move(dungeon);
+        }
+    }
+
+    // Handle player combat with enemies
+    private void handleCombat() {
+        for (int i = 0; i < enemies.size(); i++) {
+            Enemy enemy = enemies.get(i);
+            if (enemy.getX() == player.getX() && enemy.getY() == player.getY()) {
+                System.out.println("You attacked an enemy!");
+                enemies.remove(i);  // Remove defeated enemy
+                break;
+            }
+        }
     }
 
     // Shuffle an array to randomize directions
@@ -90,11 +138,24 @@ public class Game {
         }
     }
 
+    // Check if an enemy is at a specific location
+    private boolean isEnemyAt(int x, int y) {
+        for (Enemy enemy : enemies) {
+            if (enemy.getX() == x && enemy.getY() == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Print the dungeon, including the player and enemies
     private void printDungeon() {
         for (int i = 0; i < HEIGHT; i++) {
             for (int j = 0; j < WIDTH; j++) {
                 if (i == player.getY() && j == player.getX()) {
                     System.out.print('P');  // Player position
+                } else if (isEnemyAt(j, i)) {
+                    System.out.print('E');  // Enemy position
                 } else {
                     System.out.print(dungeon[i][j]);
                 }
@@ -103,6 +164,7 @@ public class Game {
         }
     }
 
+    // Handle player input and movement
     private void handleInput() {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Move (w=up, a=left, s=down, d=right): ");
@@ -114,6 +176,12 @@ public class Game {
             case 's': player.moveDown(dungeon); break;
             case 'd': player.moveRight(dungeon); break;
             default: System.out.println("Invalid input!");
+        }
+
+        // Check if the player reached the exit
+        if (dungeon[player.getY()][player.getX()] == 'X') {
+            System.out.println("Congratulations! You found the exit!");
+            System.exit(0);  // Exit the game
         }
     }
 }
