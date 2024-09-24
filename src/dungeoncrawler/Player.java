@@ -17,26 +17,31 @@ public class Player {
         return y;
     }
 
-    public void moveUp() {
-        if (y > 0) {
+    public void setPosition(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void moveUp(char[][] dungeon) {
+        if (y > 0 && dungeon[y - 1][x] == '.') {
             y--;
         }
     }
 
-    public void moveDown() {
-        if (y < 9) {  // Prevent moving out of bounds
+    public void moveDown(char[][] dungeon) {
+        if (y < dungeon.length - 1 && dungeon[y + 1][x] == '.') {
             y++;
         }
     }
 
-    public void moveLeft() {
-        if (x > 0) {
+    public void moveLeft(char[][] dungeon) {
+        if (x > 0 && dungeon[y][x - 1] == '.') {
             x--;
         }
     }
 
-    public void moveRight() {
-        if (x < 9) {  // Prevent moving out of bounds
+    public void moveRight(char[][] dungeon) {
+        if (x < dungeon[0].length - 1 && dungeon[y][x + 1] == '.') {
             x++;
         }
     }
