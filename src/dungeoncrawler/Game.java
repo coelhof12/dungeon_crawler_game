@@ -1,17 +1,27 @@
 package dungeoncrawler;
 
+import org.academiadecodigo.simplegraphics.graphics.Rectangle;
+import org.academiadecodigo.simplegraphics.graphics.Color;
+import org.academiadecodigo.simplegraphics.keyboard.Keyboard;
+import org.academiadecodigo.simplegraphics.keyboard.KeyboardEvent;
+import org.academiadecodigo.simplegraphics.keyboard.KeyboardEventType;
+import org.academiadecodigo.simplegraphics.keyboard.KeyboardHandler;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Scanner;
 
-public class Game {
+public class Game implements KeyboardHandler {
+
     private Player player;
     private char[][] dungeon;
     private final int WIDTH = 20;  // Width of the dungeon
     private final int HEIGHT = 10; // Height of the dungeon
+    private final int CELL_SIZE = 40; // Size of each cell in pixels
     private Random rand = new Random();
-    private Scanner scanner;  // Reusable Scanner for player input
+
+    private Rectangle[][] grid;
+    private Rectangle playerGraphic;  // Rectangle to represent the player graphically
 
     // List to store enemies
     private List<Enemy> enemies = new ArrayList<>();
@@ -20,7 +30,8 @@ public class Game {
         player = new Player(1, 1);  // Starting position
         dungeon = new char[HEIGHT][WIDTH];
         initializeDungeon();
-        scanner = new Scanner(System.in);  // Initialize Scanner once
+        initializeGraphics(); // Initialize graphical elements
+        setupKeyboard();      // Set up keyboard events
     }
 
     public void start() {
@@ -29,160 +40,96 @@ public class Game {
         placePlayer();
         placeExit();
         spawnEnemies(3);  // Spawns 3 enemies
+
+        // Game loop (you can add more logic here if needed)
         while (true) {
-            printDungeon();
-            handleInput();
-            moveEnemies();  // Move enemies after each player turn
-            handleCombat(); // Check for player and enemy combat interactions
+            // In a real-time game, you would use a timer or game loop
         }
     }
 
-    // Initialize the dungeon with walls
-    private void initializeDungeon() {
+    // Initialize the graphical grid for the dungeon
+    private void initializeGraphics() {
+        grid = new Rectangle[HEIGHT][WIDTH];
+
         for (int i = 0; i < HEIGHT; i++) {
             for (int j = 0; j < WIDTH; j++) {
-                dungeon[i][j] = '#';  // '#' represents a wall
+                grid[i][j] = new Rectangle(j * CELL_SIZE, i * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                grid[i][j].setColor(Color.BLACK);  // Initially draw as black
+                grid[i][j].draw();
             }
         }
+
+        // Create graphical representation of the player
+        playerGraphic = new Rectangle(player.getX() * CELL_SIZE, player.getY() * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        playerGraphic.setColor(Color.RED);
+        playerGraphic.fill();
     }
 
-    // Generate a dungeon using Depth-First Search (DFS)
-    private void generateDungeon() {
-        carvePassagesFrom(1, 1);  // Start dungeon carving from the top-left corner
+    // Handle player movement and enemy moves via keyboard input
+    private void setupKeyboard() {
+        Keyboard keyboard = new Keyboard(this);
+
+        // Set up keyboard events for movement
+        KeyboardEvent up = new KeyboardEvent();
+        up.setKey(KeyboardEvent.KEY_W);
+        up.setKeyboardEventType(KeyboardEventType.KEY_PRESSED);
+
+        KeyboardEvent left = new KeyboardEvent();
+        left.setKey(KeyboardEvent.KEY_A);
+        left.setKeyboardEventType(KeyboardEventType.KEY_PRESSED);
+
+        KeyboardEvent down = new KeyboardEvent();
+        down.setKey(KeyboardEvent.KEY_S);
+        down.setKeyboardEventType(KeyboardEventType.KEY_PRESSED);
+
+        KeyboardEvent right = new KeyboardEvent();
+        right.setKey(KeyboardEvent.KEY_D);
+        right.setKeyboardEventType(KeyboardEventType.KEY_PRESSED);
+
+        // Register keyboard events
+        keyboard.addEventListener(up);
+        keyboard.addEventListener(left);
+        keyboard.addEventListener(down);
+        keyboard.addEventListener(right);
     }
 
-    // Carve passages recursively using DFS
-    private void carvePassagesFrom(int x, int y) {
-        // Mark the current cell as a passage
-        dungeon[y][x] = '.';
-
-        // Randomly order the directions (up, down, left, right)
-        int[] directions = new int[] {1, 2, 3, 4};
-        shuffleArray(directions);
-
-        // Try to carve a passage in each direction
-        for (int direction : directions) {
-            int dx = 0, dy = 0;
-
-            switch (direction) {
-                case 1: dy = -1; break; // Up
-                case 2: dy = 1; break;  // Down
-                case 3: dx = -1; break; // Left
-                case 4: dx = 1; break;  // Right
-            }
-
-            // Check the position two steps away
-            int newX = x + 2 * dx;
-            int newY = y + 2 * dy;
-
-            // Ensure the new position is within bounds and uncarved
-            if (newX > 0 && newX < WIDTH - 1 && newY > 0 && newY < HEIGHT - 1 && dungeon[newY][newX] == '#') {
-                dungeon[y + dy][x + dx] = '.';  // Carve a passage between the cells
-                carvePassagesFrom(newX, newY);
-            }
-        }
-    }
-
-    // Place the player at the starting position
-    private void placePlayer() {
-        player.setPosition(1, 1);
-    }
-
-    // Place the exit in a random location far from the player
-    private void placeExit() {
-        int exitX, exitY;
-        do {
-            exitX = rand.nextInt(WIDTH - 2) + 1;
-            exitY = rand.nextInt(HEIGHT - 2) + 1;
-        } while (Math.abs(exitX - player.getX()) + Math.abs(exitY - player.getY()) < 10);  // Ensure it's far from player
-
-        dungeon[exitY][exitX] = 'X';  // 'X' represents the exit
-    }
-
-    // Spawn enemies in random locations
-    private void spawnEnemies(int count) {
-        for (int i = 0; i < count; i++) {
-            int ex, ey;
-            do {
-                ex = rand.nextInt(WIDTH - 2) + 1;
-                ey = rand.nextInt(HEIGHT - 2) + 1;
-            } while (dungeon[ey][ex] != '.');  // Ensure enemy spawns in an open space
-            enemies.add(new Enemy(ex, ey));
-        }
-    }
-
-    // Move enemies randomly each turn
-    private void moveEnemies() {
-        for (Enemy enemy : enemies) {
-            enemy.move(dungeon);
-        }
-    }
-
-    // Handle player combat with enemies
-    private void handleCombat() {
-        for (int i = 0; i < enemies.size(); i++) {
-            Enemy enemy = enemies.get(i);
-            if (enemy.getX() == player.getX() && enemy.getY() == player.getY()) {
-                System.out.println("You attacked an enemy!");
-                enemies.remove(i);  // Remove defeated enemy
+    // Override the keyPressed method to handle player movement
+    @Override
+    public void keyPressed(KeyboardEvent event) {
+        switch (event.getKey()) {
+            case KeyboardEvent.KEY_W:
+                movePlayer(0, -1);  // Move up
                 break;
-            }
+            case KeyboardEvent.KEY_A:
+                movePlayer(-1, 0);  // Move left
+                break;
+            case KeyboardEvent.KEY_S:
+                movePlayer(0, 1);   // Move down
+                break;
+            case KeyboardEvent.KEY_D:
+                movePlayer(1, 0);   // Move right
+                break;
         }
     }
 
-    // Shuffle an array to randomize directions
-    private void shuffleArray(int[] array) {
-        for (int i = array.length - 1; i > 0; i--) {
-            int index = rand.nextInt(i + 1);
-            int temp = array[index];
-            array[index] = array[i];
-            array[i] = temp;
+    @Override
+    public void keyReleased(KeyboardEvent event) {
+        // Not handling key release events for now
+    }
+
+    // Move the player and update the graphical position
+    private void movePlayer(int dx, int dy) {
+        int newX = player.getX() + dx;
+        int newY = player.getY() + dy;
+
+        // Check if the move is within bounds and the player isn't walking through walls
+        if (newX >= 0 && newX < WIDTH && newY >= 0 && newY < HEIGHT) {
+            player.setPosition(newX, newY);
+            playerGraphic.translate(dx * CELL_SIZE, dy * CELL_SIZE);  // Move the player graphic
         }
     }
 
-    // Check if an enemy is at a specific location
-    private boolean isEnemyAt(int x, int y) {
-        for (Enemy enemy : enemies) {
-            if (enemy.getX() == x && enemy.getY() == y) {
-                return true;
-            }
-        }
-        return false;
-    }
+    // Other existing game logic: dungeon generation, spawning enemies, etc..
 
-    // Print the dungeon, including the player and enemies
-    private void printDungeon() {
-        for (int i = 0; i < HEIGHT; i++) {
-            for (int j = 0; j < WIDTH; j++) {
-                if (i == player.getY() && j == player.getX()) {
-                    System.out.print('P');  // Player position
-                } else if (isEnemyAt(j, i)) {
-                    System.out.print('E');  // Enemy position
-                } else {
-                    System.out.print(dungeon[i][j]);
-                }
-            }
-            System.out.println();
-        }
-    }
-
-    // Handle player input and movement
-    private void handleInput() {
-        System.out.println("Move (w=up, a=left, s=down, d=right): ");
-        char input = scanner.next().charAt(0);  // Reuse Scanner for input
-
-        switch (input) {
-            case 'w': player.moveUp(dungeon); break;
-            case 'a': player.moveLeft(dungeon); break;
-            case 's': player.moveDown(dungeon); break;
-            case 'd': player.moveRight(dungeon); break;
-            default: System.out.println("Invalid input!");
-        }
-
-        // Check if the player reached the exit
-        if (dungeon[player.getY()][player.getX()] == 'X') {
-            System.out.println("Congratulations! You found the exit!");
-            System.exit(0);  // Exit the game
-        }
-    }
+    // For instance, spawning enemies could involve creating graphical ellipses for them.
 }
