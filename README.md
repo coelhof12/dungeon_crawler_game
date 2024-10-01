@@ -4,7 +4,8 @@
 
 ## The Concept 💡
 
-This project is a 2D top-down dungeon crawler where the player explores procedurally generated dungeons, battles enemies, and seeks an exit. The dungeon layout is randomly generated using Depth-First Search (DFS), ensuring each playthrough is unique. The game is built using Java, and we will soon integrate graphics via the SimpleGraphics library. Currently, the game runs in a console environment, but it will evolve with additional features like enhanced combat, inventory management, and sound.
+This project is a 2D top-down dungeon crawler where the player explores procedurally generated dungeons, battles enemies, and seeks an exit. The dungeon layout is randomly generated using Depth-First Search (DFS), ensuring each playthrough is unique. 
+The game is built using Java, and we will soon integrate graphics via the SimpleGraphics library. Currently, the game runs in a console environment, but it will evolve with additional features like enhanced combat, inventory management, and sound.
 
 ## Current Features 🛠️
 
