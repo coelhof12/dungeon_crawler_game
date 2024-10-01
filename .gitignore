@@ -1,0 +1,35 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Java specific IDE directories
+/.idea/
+/*.iml
+/.project
+/.classpath
+/.settings/
+/target/
+/bin/
+/out/
+
+# External libraries (you can leave this uncommented if you're not committing jars)
+*.jar
+
+# IDE-specific files for IntelliJ, Eclipse, NetBeans
+/.metadata/
+/*.iml
+/out/
+/build/
+/nbproject/private/
+/.gradle/
+/.mvn/
+
+# Ignore compiled assets and cache files
+*.tmp
+*.swp
+*.DS_Store
+
+
+Test_Dungeon_Game.rtf
