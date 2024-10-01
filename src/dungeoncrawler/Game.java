@@ -11,6 +11,7 @@ public class Game {
     private final int WIDTH = 20;  // Width of the dungeon
     private final int HEIGHT = 10; // Height of the dungeon
     private Random rand = new Random();
+    private Scanner scanner;  // Reusable Scanner for player input
 
     // List to store enemies
     private List<Enemy> enemies = new ArrayList<>();
@@ -19,6 +20,7 @@ public class Game {
         player = new Player(1, 1);  // Starting position
         dungeon = new char[HEIGHT][WIDTH];
         initializeDungeon();
+        scanner = new Scanner(System.in);  // Initialize Scanner once
     }
 
     public void start() {
@@ -166,9 +168,8 @@ public class Game {
 
     // Handle player input and movement
     private void handleInput() {
-        Scanner scanner = new Scanner(System.in);
         System.out.println("Move (w=up, a=left, s=down, d=right): ");
-        char input = scanner.next().charAt(0);
+        char input = scanner.next().charAt(0);  // Reuse Scanner for input
 
         switch (input) {
             case 'w': player.moveUp(dungeon); break;
