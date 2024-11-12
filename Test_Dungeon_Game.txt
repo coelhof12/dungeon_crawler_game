@@ -16,3 +16,5 @@ jar cfm ../dungeoncrawler.jar ../MANIFEST.MF dungeoncrawler/*.class
 4. Run the JAR File:\
 
 java -jar ../dungeoncrawler.jar
+
+LAUNCH INSTRUCTIONS
